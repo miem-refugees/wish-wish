@@ -3,26 +3,42 @@ package main
 import (
 	"log"
 	"os"
-	"time"
+	"os/signal"
 
-	tele "gopkg.in/telebot.v3"
+	"github.com/miem-refugees/wish-wish/internal/telegram"
+	"github.com/miem-refugees/wish-wish/internal/telegram/handler"
+	"github.com/miem-refugees/wish-wish/internal/telegram/handler/middleware"
+	"go.uber.org/zap"
 )
 
 func main() {
-	pref := tele.Settings{
-		Token:  os.Getenv("TOKEN"),
-		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
 	}
 
-	b, err := tele.NewBot(pref)
+	bot, err := telegram.NewBot(
+		os.Getenv("TOKEN"),
+		logger,
+	)
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 
-	b.Handle("/hello", func(c tele.Context) error {
-		return c.Send("Hello!")
-	})
+	bot.RegisterHandler(
+		handler.CommonHandlers(logger)...,
+	)
+	bot.Use(
+		middleware.Logger(logger),
+	)
 
-	b.Start()
+	logger.Info("Starting bot")
+	go bot.Start()
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt)
+	<-ch
+	logger.Info("Got interrupt signal, stopping bot")
+	bot.Stop()
+	logger.Info("Bot stopped")
 }
