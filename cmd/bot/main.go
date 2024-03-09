@@ -25,11 +25,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	bot.Use(
+		middleware.Tracer(),
+		middleware.Recover(logger),
+		middleware.Logger(logger),
+		//middleware.Auth(storage, "user", logger),
+	)
 	bot.RegisterHandler(
 		handler.CommonHandlers(logger)...,
-	)
-	bot.Use(
-		middleware.Logger(logger),
 	)
 
 	logger.Info("Starting bot")

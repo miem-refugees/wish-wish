@@ -24,7 +24,7 @@ func (b *Bot) Use(middlewareFunc ...tele.MiddlewareFunc) {
 	b.logger.Debug("Registered middlewares", zap.Int("middleware_len", len(middlewareFunc)))
 }
 
-func (b *Bot) RegisterHandler(handlers ...*handler.Handler) {
+func (b *Bot) RegisterHandler(handlers ...handler.Handler) {
 	for _, h := range handlers {
 		b.bot.Handle(h.Endpoint, h.HandlerFunc, h.Middleware...)
 	}
