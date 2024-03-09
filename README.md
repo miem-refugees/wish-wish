@@ -1,2 +1,3 @@
-# wish-wish
-Wishlist application
+# Wish-wish list application
+
+In progress
